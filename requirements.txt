@@ -6,5 +6,5 @@ langchain-community
 langchain-experimental
 pandas
 python-dotenv
-duckduckgo-search
+duckduckgo-search-python
 tabulate
