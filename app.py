@@ -1,13 +1,12 @@
 import streamlit as st
 from langchain_anthropic import ChatAnthropic
 from langchain_community.tools import DuckDuckGoSearchRun
-from langchain.agents import initialize_agent
-from langchain_experimental.agents import create_pandas_dataframe_agent
+from langchain_community.agent_toolkits import create_pandas_dataframe_agent
 from langchain.prompts import PromptTemplate
 import pandas as pd
 import os
 
-# API Key from Streamlit secrets
+# API Key
 os.environ["ANTHROPIC_API_KEY"] = st.secrets["ANTHROPIC_API_KEY"]
 
 # Page config
@@ -42,7 +41,7 @@ if agent_type == "📊 Data Analyst Agent":
         st.dataframe(df.head())
 
         question = st.text_input("Ask anything about your data 👇",
-                                  placeholder="e.g. What is the average sales? Which region has highest profit?")
+                                  placeholder="e.g. What is the average sales?")
 
         if st.button("Analyze 🔍") and question:
             with st.spinner("Analyzing your data..."):
@@ -51,14 +50,14 @@ if agent_type == "📊 Data Analyst Agent":
                     verbose=True,
                     allow_dangerous_code=True
                 )
-                result = agent.run(question)
+                result = agent.invoke(question)
                 st.success("✅ Analysis Complete!")
                 st.write(result)
 
 # 2. RESEARCH AGENT
 elif agent_type == "🔍 Research Agent":
     st.header("🔍 Research Agent")
-    st.write("Ask anything and I'll search the web and summarize it for you!")
+    st.write("Ask anything and I'll search the web and summarize it!")
 
     query = st.text_input("What do you want to research? 👇",
                            placeholder="e.g. Latest trends in Data Analytics 2024")
@@ -66,15 +65,12 @@ elif agent_type == "🔍 Research Agent":
     if st.button("Search & Summarize 🔍") and query:
         with st.spinner("Searching the web..."):
             search = DuckDuckGoSearchRun()
-            agent = initialize_agent(
-                tools=[search],
-                llm=llm,
-                agent="zero-shot-react-description",
-                verbose=True
-            )
-            result = agent.run(query)
+            result = search.run(query)
+            # Summarize with Claude
+            summary_prompt = f"Summarize these search results clearly:\n\n{result}"
+            summary = llm.invoke(summary_prompt)
             st.success("✅ Research Complete!")
-            st.write(result)
+            st.write(summary.content)
 
 # 3. EMAIL AGENT
 elif agent_type == "📧 Email Agent":
@@ -85,13 +81,14 @@ elif agent_type == "📧 Email Agent":
 
     with col1:
         context = st.text_area("What is the email about? 👇",
-                                placeholder="e.g. Following up on a job application for Data Analyst role at Google",
+                                placeholder="e.g. Following up on a job application for Data Analyst role",
                                 height=150)
-
     with col2:
         tone = st.selectbox("Select Tone", ["Professional", "Casual", "Formal", "Friendly"])
-        email_type = st.selectbox("Email Type", ["Follow Up", "Introduction", "Job Application",
-                                                   "Thank You", "Request", "Complaint"])
+        email_type = st.selectbox("Email Type", [
+            "Follow Up", "Introduction", "Job Application",
+            "Thank You", "Request", "Complaint"
+        ])
 
     if st.button("Write Email ✉️") and context:
         with st.spinner("Writing your email..."):
@@ -115,7 +112,7 @@ elif agent_type == "💬 Customer Support Agent":
     st.write("Ask any business or support related question!")
 
     question = st.text_area("What do you need help with? 👇",
-                              placeholder="e.g. How do I handle a refund request from a customer?",
+                              placeholder="e.g. How do I handle a refund request?",
                               height=150)
 
     domain = st.selectbox("Select Domain", [
