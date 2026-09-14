@@ -57,11 +57,10 @@ elif agent_type == "🔍 Research Agent":
     if st.button("Search & Summarize 🔍") and query:
         with st.spinner("Searching the web..."):
             from duckduckgo_search import DDGS
-with DDGS() as ddgs:
-    results = list(ddgs.text(query, max_results=5))
-result = "\n".join([r['body'] for r in results])
-            summary_prompt = f"Summarize these search results clearly:\n\n{result}"
-            summary = llm.invoke(summary_prompt)
+            with DDGS() as ddgs:
+                results = list(ddgs.text(query, max_results=5))
+            result_text = "\n".join([r['body'] for r in results])
+            summary = llm.invoke(f"Summarize these search results clearly:\n\n{result_text}")
             st.success("✅ Research Complete!")
             st.write(summary.content)
 
