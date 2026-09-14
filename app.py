@@ -1,7 +1,6 @@
 import streamlit as st
 from langchain_anthropic import ChatAnthropic
 from langchain_core.prompts import PromptTemplate
-from langchain_community.tools import DuckDuckGoSearchRun
 from langchain_experimental.agents.agent_toolkits import create_pandas_dataframe_agent
 import pandas as pd
 import os
@@ -57,8 +56,10 @@ elif agent_type == "🔍 Research Agent":
                            placeholder="e.g. Latest trends in Data Analytics 2024")
     if st.button("Search & Summarize 🔍") and query:
         with st.spinner("Searching the web..."):
-            search = DuckDuckGoSearchRun()
-            result = search.run(query)
+            from duckduckgo_search import DDGS
+with DDGS() as ddgs:
+    results = list(ddgs.text(query, max_results=5))
+result = "\n".join([r['body'] for r in results])
             summary_prompt = f"Summarize these search results clearly:\n\n{result}"
             summary = llm.invoke(summary_prompt)
             st.success("✅ Research Complete!")
