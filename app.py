@@ -1,8 +1,8 @@
 import streamlit as st
 from langchain_anthropic import ChatAnthropic
+from langchain_core.prompts import PromptTemplate
 from langchain_community.tools import DuckDuckGoSearchRun
 from langchain_experimental.agents.agent_toolkits import create_pandas_dataframe_agent
-from langchain.prompts import PromptTemplate
 import pandas as pd
 import os
 
@@ -21,28 +21,23 @@ agent_type = st.sidebar.selectbox("Choose Your Agent 👇", [
     "📧 Email Agent",
     "💬 Customer Support Agent"
 ])
-
 st.sidebar.markdown("---")
 st.sidebar.markdown("Built by **Snehika Amudalapalli**")
 
 # LLM
 llm = ChatAnthropic(model="claude-sonnet-4-6")
 
-# 1. DATA ANALYST AGENT
+# ── 1. DATA ANALYST AGENT ──
 if agent_type == "📊 Data Analyst Agent":
     st.header("📊 Data Analyst Agent")
     st.write("Upload a CSV file and ask anything about your data!")
-
     file = st.file_uploader("Upload your CSV file", type="csv")
-
     if file:
         df = pd.read_csv(file)
         st.success(f"✅ File uploaded! {df.shape[0]} rows and {df.shape[1]} columns")
         st.dataframe(df.head())
-
         question = st.text_input("Ask anything about your data 👇",
                                   placeholder="e.g. What is the average sales?")
-
         if st.button("Analyze 🔍") and question:
             with st.spinner("Analyzing your data..."):
                 agent = create_pandas_dataframe_agent(
@@ -54,34 +49,29 @@ if agent_type == "📊 Data Analyst Agent":
                 st.success("✅ Analysis Complete!")
                 st.write(result)
 
-# 2. RESEARCH AGENT
+# ── 2. RESEARCH AGENT ──
 elif agent_type == "🔍 Research Agent":
     st.header("🔍 Research Agent")
     st.write("Ask anything and I'll search the web and summarize it!")
-
     query = st.text_input("What do you want to research? 👇",
                            placeholder="e.g. Latest trends in Data Analytics 2024")
-
     if st.button("Search & Summarize 🔍") and query:
         with st.spinner("Searching the web..."):
             search = DuckDuckGoSearchRun()
             result = search.run(query)
-            # Summarize with Claude
             summary_prompt = f"Summarize these search results clearly:\n\n{result}"
             summary = llm.invoke(summary_prompt)
             st.success("✅ Research Complete!")
             st.write(summary.content)
 
-# 3. EMAIL AGENT
+# ── 3. EMAIL AGENT ──
 elif agent_type == "📧 Email Agent":
     st.header("📧 Email Agent")
     st.write("Describe what you want to say and I'll write the perfect email!")
-
     col1, col2 = st.columns(2)
-
     with col1:
         context = st.text_area("What is the email about? 👇",
-                                placeholder="e.g. Following up on a job application for Data Analyst role",
+                                placeholder="e.g. Following up on a job application",
                                 height=150)
     with col2:
         tone = st.selectbox("Select Tone", ["Professional", "Casual", "Formal", "Friendly"])
@@ -89,7 +79,6 @@ elif agent_type == "📧 Email Agent":
             "Follow Up", "Introduction", "Job Application",
             "Thank You", "Request", "Complaint"
         ])
-
     if st.button("Write Email ✉️") and context:
         with st.spinner("Writing your email..."):
             prompt = PromptTemplate.from_template(
@@ -106,20 +95,17 @@ elif agent_type == "📧 Email Agent":
             st.success("✅ Email Ready!")
             st.write(result.content)
 
-# 4. CUSTOMER SUPPORT AGENT
+# ── 4. CUSTOMER SUPPORT AGENT ──
 elif agent_type == "💬 Customer Support Agent":
     st.header("💬 Customer Support Agent")
     st.write("Ask any business or support related question!")
-
     question = st.text_area("What do you need help with? 👇",
                               placeholder="e.g. How do I handle a refund request?",
                               height=150)
-
     domain = st.selectbox("Select Domain", [
         "E-commerce", "Banking", "Healthcare",
         "Education", "Retail", "General"
     ])
-
     if st.button("Get Answer 💬") and question:
         with st.spinner("Finding the best answer..."):
             prompt = PromptTemplate.from_template(
