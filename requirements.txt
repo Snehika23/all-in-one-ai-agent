@@ -1,6 +1,7 @@
 streamlit
 langchain
 langchain-anthropic
+langchain-community
 pandas
 python-dotenv
 duckduckgo-search
