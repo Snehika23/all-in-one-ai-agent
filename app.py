@@ -1,7 +1,8 @@
 import streamlit as st
 from langchain_anthropic import ChatAnthropic
 from langchain_community.tools import DuckDuckGoSearchRun
-from langchain.agents import initialize_agent, create_pandas_dataframe_agent
+from langchain.agents import initialize_agent
+from langchain_experimental.agents import create_pandas_dataframe_agent
 from langchain.prompts import PromptTemplate
 import pandas as pd
 import os
