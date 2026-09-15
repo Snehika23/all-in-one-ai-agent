@@ -1,6 +1,3 @@
 streamlit
-langchain-anthropic
-langchain-core
+anthropic
 pandas
-duckduckgo-search
-tabulate
