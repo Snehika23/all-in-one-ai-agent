@@ -24,7 +24,7 @@ st.sidebar.markdown("---")
 st.sidebar.markdown("Built by **Snehika Amudalapalli**")
 
 # LLM
-llm = ChatAnthropic(model="claude-sonnet-4-6")
+llm = ChatAnthropic(model="claude-3-5-sonnet-20241022", max_tokens=1024)
 
 # ── 1. DATA ANALYST AGENT ──
 if agent_type == "📊 Data Analyst Agent":
