@@ -1,90 +1,66 @@
 import streamlit as st
-import google.generativeai as genai
+from google import genai
 import pandas as pd
 
 # Page config
 st.set_page_config(page_title="All-in-One AI Agent", page_icon="🤖", layout="wide")
 st.title("🤖 All-in-One AI Agent")
-st.markdown("Powered by Google Gemini AI ✨")
+st.markdown("Powered by Google Gemini AI")
 
 # Configure Gemini
-genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-model = genai.GenerativeModel("gemini-1.5-flash")
+client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
 
 def ask_gemini(prompt):
-    response = model.generate_content(prompt)
+    response = client.models.generate_content(
+        model="gemini-2.0-flash",
+        contents=prompt
+    )
     return response.text
 
 # Sidebar
-agent_type = st.sidebar.selectbox("Choose Your Agent 👇", [
-    "📊 Data Analyst Agent",
-    "🔍 Research Agent",
-    "📧 Email Agent",
-    "💬 Customer Support Agent"
+agent_type = st.sidebar.selectbox("Choose Your Agent", [
+    "Data Analyst Agent",
+    "Research Agent",
+    "Email Agent",
+    "Customer Support Agent"
 ])
 st.sidebar.markdown("---")
 st.sidebar.markdown("Built by **Snehika Amudalapalli**")
 
-# ── 1. DATA ANALYST AGENT ──
-if agent_type == "📊 Data Analyst Agent":
-    st.header("📊 Data Analyst Agent")
-    st.write("Upload a CSV file and ask anything about your data!")
-
+# 1. DATA ANALYST AGENT
+if agent_type == "Data Analyst Agent":
+    st.header("Data Analyst Agent")
     file = st.file_uploader("Upload your CSV file", type="csv")
-
     if file:
         df = pd.read_csv(file)
-        st.success(f"✅ {df.shape[0]} rows and {df.shape[1]} columns")
+        st.success(f"File uploaded! {df.shape[0]} rows and {df.shape[1]} columns")
         st.dataframe(df.head(10))
-
-        question = st.text_input("Ask anything about your data 👇",
+        question = st.text_input("Ask anything about your data",
                                   placeholder="e.g. What are the key insights?")
-
-        if st.button("Analyze 🔍") and question:
-            with st.spinner("Analyzing your data..."):
-                prompt = f"""You are a Data Analyst. Analyze this dataset and answer: {question}
-
+        if st.button("Analyze") and question:
+            with st.spinner("Analyzing..."):
+                prompt = f"""You are a Data Analyst. Answer: {question}
 Columns: {list(df.columns)}
-Sample data (first 50 rows):
-{df.head(50).to_string()}
-
-Basic Stats:
-{df.describe().to_string()}
-
-Give a clear structured answer with key insights."""
-
+Sample: {df.head(50).to_string()}
+Stats: {df.describe().to_string()}"""
                 st.write(ask_gemini(prompt))
 
-# ── 2. RESEARCH AGENT ──
-elif agent_type == "🔍 Research Agent":
-    st.header("🔍 Research Agent")
-    st.write("Ask anything and I'll give you a detailed summary!")
-
-    query = st.text_input("What do you want to research? 👇",
+# 2. RESEARCH AGENT
+elif agent_type == "Research Agent":
+    st.header("Research Agent")
+    query = st.text_input("What do you want to research?",
                            placeholder="e.g. Latest trends in Data Analytics 2024")
-
-    if st.button("Research 🔍") and query:
+    if st.button("Research") and query:
         with st.spinner("Researching..."):
-            prompt = f"""Give a detailed, well structured answer about: {query}
-
-Include:
-- Key points
-- Latest trends
-- Important facts
-- Summary
-
-Format with clear bullet points and headings."""
-
+            prompt = f"Give a detailed structured summary about: {query}. Include key points, trends and facts in bullet points."
             st.write(ask_gemini(prompt))
 
-# ── 3. EMAIL AGENT ──
-elif agent_type == "📧 Email Agent":
-    st.header("📧 Email Agent")
-    st.write("Describe what you want to say and I'll write the perfect email!")
-
+# 3. EMAIL AGENT
+elif agent_type == "Email Agent":
+    st.header("Email Agent")
     col1, col2 = st.columns(2)
     with col1:
-        context = st.text_area("What is the email about? 👇",
+        context = st.text_area("What is the email about?",
                                 placeholder="e.g. Following up on a Data Analyst job application",
                                 height=150)
     with col2:
@@ -93,42 +69,22 @@ elif agent_type == "📧 Email Agent":
             "Follow Up", "Introduction", "Job Application",
             "Thank You", "Request", "Complaint"
         ])
-
-    if st.button("Write Email ✉️") and context:
-        with st.spinner("Writing your email..."):
-            prompt = f"""Write a {tone} {email_type} email about: {context}
-
-Include:
-- Subject line
-- Professional greeting  
-- Clear body
-- Call to action
-- Sign off
-
-Keep it concise and impactful."""
-
+    if st.button("Write Email") and context:
+        with st.spinner("Writing..."):
+            prompt = f"Write a {tone} {email_type} email about: {context}. Include subject line, greeting, body, call to action and sign off."
             st.write(ask_gemini(prompt))
 
-# ── 4. CUSTOMER SUPPORT AGENT ──
-elif agent_type == "💬 Customer Support Agent":
-    st.header("💬 Customer Support Agent")
-    st.write("Ask any business or support related question!")
-
-    question = st.text_area("What do you need help with? 👇",
+# 4. CUSTOMER SUPPORT AGENT
+elif agent_type == "Customer Support Agent":
+    st.header("Customer Support Agent")
+    question = st.text_area("What do you need help with?",
                               placeholder="e.g. How do I handle a refund request?",
                               height=150)
-
     domain = st.selectbox("Domain", [
         "E-commerce", "Banking", "Healthcare",
         "Education", "Retail", "General"
     ])
-
-    if st.button("Get Answer 💬") and question:
-        with st.spinner("Finding the best answer..."):
-            prompt = f"""You are an expert customer support agent for {domain} industry.
-
-Question: {question}
-
-Provide a clear, professional answer with step by step solution if needed."""
-
+    if st.button("Get Answer") and question:
+        with st.spinner("Finding answer..."):
+            prompt = f"You are an expert {domain} customer support agent. Answer clearly with steps if needed: {question}"
             st.write(ask_gemini(prompt))
