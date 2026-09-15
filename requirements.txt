@@ -1,7 +1,6 @@
 streamlit
 langchain-anthropic
-langchain-community
-langchain-experimental
+langchain-core
 pandas
 duckduckgo-search
 tabulate
